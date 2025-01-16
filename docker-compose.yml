@@ -1,0 +1,47 @@
+name: Crypto-Monitor
+
+services:
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - Crypto-Monitor
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - Crypto-Monitor
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - Crypto-Monitor
+    ports:
+      - "5173:5173" 
+    command: npm run dev -- --host
+    depends_on:
+      - api
+      
+volumes:
+  mongo_data:
+  
+
+networks:
+  Crypto-Monitor:
+    driver: bridge
